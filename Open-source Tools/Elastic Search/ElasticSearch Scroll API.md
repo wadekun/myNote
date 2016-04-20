@@ -16,6 +16,7 @@ Scroll搜索会及时的制作快照。这个快照不会保存任何在初始�
 ## Scroll 使用
 使用Scroll API很简单，只需要在查询后加上参数 `scroll=t`，其中t 就是快照保存的时间，例如：`curl -XGET localhost:9200/bank/account/_search?pretty&scroll=2m -d {"query":{"match_all":{}}}`，其中`2m`代表保存时间2分钟（数字+单位）。   
 单位如下：
+
 | Time | units     |
 | :------------- | :------------- |
 | y      | year       |
