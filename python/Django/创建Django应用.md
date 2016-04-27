@@ -1,4 +1,4 @@
-# **一些常用DJango命令**
+# **应用于应用的models**
 
 ## django-admin startproject mysite
 创建一个 mysite的project
@@ -86,3 +86,31 @@ INSTALLED_APPS = (
 # 删除记录
 >>> s.delete()
 ```
+
+# 简单的管理界面
+
+## python manage.py createsuperuser 创建一个admin
+
+## python manage.py runserver 启动项目
+访问：http://127.0.0.1:8000/admin/
+
+## 让shops应用在django中可编辑
+编辑 shops/admin.py:
+
+```
+from django.contrib import admin
+
+from .models import Shop
+
+class ShopAdmin(admin.ModelAdmin):
+    # list dislay
+    list_display = ('id', 'shop_name', 'shop_url', 'admin_phone', 'admin', 'admin_email')
+    # list filter
+    list_filter = ['shop_name']
+    # search input
+    search_fields = ['shop_name', 'admin']
+
+admin.site.register(Shop, ShopAdmin))
+```
+##  编辑模板文件
+将django.contrib.admin下的模板文件拷贝到`templates/admin`目录下进行编辑
