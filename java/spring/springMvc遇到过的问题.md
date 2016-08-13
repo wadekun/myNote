@@ -60,4 +60,6 @@
             }
         });
 即最后封装的数据格式是：`orderGoodsList[0].orderGoodsId=''&orderGoodsList[0].orderGoodsNum=''&orderGoodsList[0].orderGoodsPrice=''&orderGoodsList[1].orderGoodsId=''&orderGoodsList[1].orderGoodsNum=''&orderGoodsList[1].orderGoodsPrice=''`
-直接用list接收竟然不可以。。555。反正这次是没发现有什么更好的方式
+
+### 接收Date参数
+字段上加入注解 `@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss", iso = DateTimeFormat.ISO.DATE_TIME)`
