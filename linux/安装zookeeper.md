@@ -17,7 +17,7 @@ tar -zxvf zookeeper-3.4.9.tar.gz
 
 # 配置
 
-> zookeeper支持两种运行模式：独立模式（standalone）和复制模式（replicated）。   
+> zookeeper支持两种运行模式：独立模式/单机模式（standalone）和 复制模式/集群模式（replicated）。   
 
 
 > 真正用于生产环境的zookeeper肯定都是使用 **复制模式** 的，这样做可以避免单点问题。想要使用 **复制模式**，但没有多余的机器能够使用，可以再单台机器上通过配置来使用 **复制模式**，从而模拟真实的集群环境。
@@ -28,12 +28,18 @@ tar -zxvf zookeeper-3.4.9.tar.gz
 
 ```shell
 # The number of milliseconds of each tick
+# 这个时间是作为 Zookeeper 服务器之间或客户端与服务器之间维持心跳的时间间隔，也就是每个 tickTime 时间就会发送一个心跳
 tickTime=2000
+
 # The number of ticks that the initial
 # synchronization phase can take
+# 这个配置项是用来配置 Zookeeper 接受客户端（这里所说的客户端不是用户连接 Zookeeper 服务器的客户端，而是 Zookeeper 服务器集群中连接到 Leader 的 Follower 服务器）初始化连接时最长能忍受多少个心跳时间间隔数。
+# 当已经超过 10 个心跳的时间（也就是 tickTime）长度后 Zookeeper 服务器还没有收到客户端的返回信息，那么表明这个客户端连接失败。总的时间长度就是 10*2000=10 秒
 initLimit=10
+
 # The number of ticks that can pass between
 # sending a request and getting an acknowledgement
+# 这个配置项标识 Leader 与 Follower 之间发送消息，请求和应答时间长度，最长不能超过多少个 tickTime 的时间长度，总的时间长度就是 5*2000=10 秒
 syncLimit=5
 
 # the directory where the snapshot is stored.
