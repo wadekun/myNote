@@ -138,13 +138,13 @@ public class MyPasswordEncoder implements PasswordEncoder {
 然后修改 `deployerConfigContext.xml` 文件
 ```xml
 <!-- 加入 YzfPasswordEncoder -->
-<bean id="yzfPasswordEncoder" class="com.liangck.cas.YzfPasswordEncoder"/>
+<bean id="myPasswordEncoder" class="com.liangck.cas.MyPasswordEncoder"/>
 
 <!-- 修改 primaryAuthenticationHandler（QueryDatabaseAuthenticationHandler），加入 PasswordEncoder配置 -->
 <bean id="primaryAuthenticationHandler" class="org.jasig.cas.adaptors.jdbc.QueryDatabaseAuthenticationHandler">
         <property name="dataSource" ref="dataSource"></property>
         <property name="sql" value="select password from v_password where login_name = ? "></property>
-        <property name="passwordEncoder" ref="MyPasswordEncoder"></property>
+        <property name="passwordEncoder" ref="myPasswordEncoder"></property>
     </bean>
 
 ```
