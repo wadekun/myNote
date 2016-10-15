@@ -106,8 +106,8 @@ class="org.jasig.cas.authentication.handler.support.HttpBasedServiceCredentialsA
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName" value="com.mysql.jdbc.Driver" />
         <property name="url" value="jdbc:mysql://127.0.0.1:5688/biz?useUnicode=true&amp;characterEncoding=utf-8&amp;zeroDateTimeBehavior=convertToNull" />
-        <property name="username" value="root" />
-        <property name="password" value="root123456" />
+        <property name="username" value="" />
+        <property name="password" value="" />
     </bean>
 ```
 
