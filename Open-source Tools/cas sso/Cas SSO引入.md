@@ -370,3 +370,10 @@ web.xml 中加入以下配置：
 ```
 
 以上，启动客户端应用后，会重定向到cas-server 的登录页面。登陆后会返回客户端应用。
+
+# 参考资料
+[SSO 单点系列](http://www.cnblogs.com/vhua/tag/sso/)
+
+[单点登录之CAS SSO 从入门到精通](http://blog.csdn.net/lifetragedy/article/details/43817903)
+
+[单点登录系统CAS搭建及取得更多用户信息的实现](http://blog.csdn.net/ishallwin/article/details/8718675)
