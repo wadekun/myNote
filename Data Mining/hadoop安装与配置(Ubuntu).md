@@ -162,3 +162,8 @@ $ ./sbin/mr-jobhistory-daemon.sh start historyserver # 开启历史服务才能�
 # 启动成功
 yarn ui：http://node-ip:8088/cluster      
 hdfs ui：http://node-ip:50070/       
+
+
+# References
+http://www.powerxing.com/install-hadoop/
+http://www.powerxing.com/spark-quick-start-guide/
