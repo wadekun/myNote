@@ -41,6 +41,8 @@ spark.history.fs.logDirectory=hdfs:///tmp/spark/events
 
 ## 启动
 ```bash
+# 启动spark historyserver
+$ ./sbin/start-history-server.sh
 # 本地模式启动
 $ ./bin/spark-shell  --master local
 # 在yarn上运行
@@ -49,6 +51,18 @@ $ ./bin/spark-shell --master yarn --deploy-mode client
 
 spark historyserver ui：http://node-ip:8089
 spark ui：http://node-ip:4040
+
+```bash
+$ jps
+10642 NodeManager    # yarn的NodeManager
+10515 ResourceManager # yarn的ResourceManager
+12263 NameNode       # hdfs NameNode
+12600 SecondaryNameNode # hdfs SecondaryNameNode
+12411 DataNode       # hdfs DataNode
+8397 HistoryServer   # spark history server 
+8286 JobHistoryServer  # yarn historyserver
+13294 Jps
+```
 
 ## 启动遇到的问题
 

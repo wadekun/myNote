@@ -163,6 +163,17 @@ $ ./sbin/mr-jobhistory-daemon.sh start historyserver # 开启历史服务才能�
 yarn ui：http://node-ip:8088/cluster      
 hdfs ui：http://node-ip:50070/       
 
+```bash
+$ jps
+10642 NodeManager    # yarn的NodeManager
+10515 ResourceManager # yarn的ResourceManager
+12263 NameNode       # hdfs NameNode
+12600 SecondaryNameNode # hdfs SecondaryNameNode
+12411 DataNode       # hdfs DataNode
+8286 JobHistoryServer  # yarn historyserver
+13294 Jps
+```
+
 
 # References
 http://www.powerxing.com/install-hadoop/
