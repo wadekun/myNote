@@ -89,9 +89,9 @@ http://www.apache.wiki/pages/viewpage.action?pageId=2886208
 ![](./imgs/spark/cluster-overview.png)  
 Spark应用在集群上以独立的进程组来运行，在main程序中通过SparkContext来驱动（称之为driver程序）。
 1. 为了运行在集群上，SparkContext首先与Cluster Manager通信，Cluster Manager会分配应用相应的资源。
-  1. Spark 自己的 Standlone Cluster Manager
-  2. Mesos
-  3. Yarn
+    1. Spark 自己的 Standlone Cluster Manager
+    2. Mesos
+    3. Yarn
 2. Cluster Manager为Spark分配好资源节点（Work Node），SparkContext与Work Node中的Executor通信，这些Executor进程可以运行计算并且为Spark应用存储数据。
 3. SparkContext发送代码（通过 JAR 或者 Python 文件定义传递给 SparkContext）至Executor。
 4. 最终SparkContext将发送Task至Executor。
