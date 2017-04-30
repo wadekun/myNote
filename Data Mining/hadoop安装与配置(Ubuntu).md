@@ -154,7 +154,7 @@ $ ./sbin/start-dfs.sh
 $ ./sbin/start-yarn.sh
 ```
 
-##
+## 启动历史服务
 ```bash
 $ ./sbin/mr-jobhistory-daemon.sh start historyserver # 开启历史服务才能在WEB中查看任务运行
 ```
