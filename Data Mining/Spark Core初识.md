@@ -5,6 +5,15 @@ Spark的核心概念是 Resilient Distributed Dataset（弹性分布式数据集
 * 可并行操作
 * 失效后自动重构
 
+# Spark编程基本流程
+* 创建SparkContext对象（封装了Spark执行环境信息）
+* 创建于操作RDD（transformation or action）
+* 返回结果，保存到HDFS或者collect到driver打印
+
+# 创建SparkContext
+## 创建conf
+
+
 ## 创建RDD
 有两种方法创建RDD：
 * 在driver中,parallelizing一个已存在的集合：    

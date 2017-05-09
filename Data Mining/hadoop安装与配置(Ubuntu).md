@@ -126,6 +126,17 @@ $ ./bin/hadoop jar ./share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar 
                 <name>mapreduce.framework.name</name>
                 <value>yarn</value>
         </property>
+
+        <!-- jobhistory 配置 -->
+        <property>
+          <name>mapreduce.jobhistory.address </name>
+          <value>hostName:10020</value>
+        </property>  
+
+        <property>
+          <name>mapreduce.jobhistory.webapp.address</name>
+          <value>hostName:19888</value>
+        </property>  
 </configuration>
 ```
 
@@ -135,6 +146,12 @@ $ ./bin/hadoop jar ./share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar 
         <property>
                 <name>yarn.nodemanager.aux-services</name>
                 <value>mapreduce_shuffle</value>
+        </property>
+
+        <!-- hitory server 配置 -->
+        <property>
+           <name>yarn.log.server.url</name>
+           <value>http://<LOG_SERVER_HOSTNAME>:19888/jobhistory/logs</value>
         </property>
 </configuration>
 ```
