@@ -2,7 +2,7 @@
 Java反射提供了获取运行时类的内部结构。constructor、method、field。
 
 一个反射调用的简单例子：
-```
+```java
   class MyClass {
       public int count;
 
@@ -43,7 +43,7 @@ Java反射提供了获取运行时类的内部结构。constructor、method、fi
         }
 ```
 处理数组：
-```
+```java
 //2.处理数组
         Object array = Array.newInstance(String.class, 10);// 等价于new String[10]
         Array.set(array, 0, "hello"); // 等价于array[0] = "hello"
@@ -57,7 +57,7 @@ Java 5中引入了泛型的概念之后,Java反射API也做了相应的修改,�
                                           `<E:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/Collection<TE;>;;`,
 这就说明List接口有一个类型参数E.在运行时刻,JVM就会读取Signature属性的内容并提供给反射API来使用.
 
-```
+```java
     /**
      * java.lang.reflect.Type：java语言中所有类型的公共父接口
      * Type 有四个子接口: ParameterizedType, TypeVariable, WildcardType, GenericArrayType
@@ -173,17 +173,19 @@ Java 5中引入了泛型的概念之后,Java反射API也做了相应的修改,�
 JDK动态代理中重要的一个接口 InvocationHandler 和一个类 Proxy。
 
 1. InvocationHandler 接口     
+```java
      public interface InvocationHandler {
                                被代理的对象    被代理的方法实例 方法参数
           public static invoke(Object proxy, Method method, Object[] args) throws Throwable;
      }
+```     
 2. Proxy类
 ![](imgs/Proxy-doc.png)
 返回代理实例的方法
                                 类加载器             被代理的类的全部接口      InvocationHandler实例
 static Object newProxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h);
 
-```
+```java
 // 接口
 interface Subject {
     void visit();
