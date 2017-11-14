@@ -151,6 +151,9 @@ ipvsadm
 ```
 
 ### 安装keepalived
+
+下载keepalived： http://www.keepalived.org/download.html
+
 1. 解压
 2. 到keepalived目录内：   
 
@@ -159,12 +162,24 @@ ipvsadm
   ```
 3. 修改配置
 ```bash
-cp /usr/local/keepalived/etc/sysconfig/keepalived /etc/sysconfig/
-mkdir /etc/keepalived
-ln -s /usr/local/keepalived/sbin/keepalived /usr/sbin/
-touch /etc/init.d/keepalived
-chmod +x /etc/init.d/keepalived
-vi /etc/init.d/keepalived
+# 拷贝配置文件
+shell> mkdir /etc/keepalived
+shell> cp /usr/local/keepalived/etc/keepalived.conf /etc/keepalived/keepalived.conf
+shell> cp /usr/local/keepalived/etc/rc.d/init.d/keepalived /etc/rc.d/init.d/keepalived
+shell> cp /usr/local/keepalived/etc/sysconfig/keepalived /etc/sysconfig/keepalived
+
+# 开机自启
+shell> chkconfig keepalived on
+shell> service keepalived start   #启动服务
+shell> service keepalived stop    #停止服务
+shell> service keepalived restart #重启服务
+
+# cp /usr/local/keepalived/etc/sysconfig/keepalived /etc/sysconfig/
+# mkdir /etc/keepalived
+# ln -s /usr/local/keepalived/sbin/keepalived /usr/sbin/
+# touch /etc/init.d/keepalived
+# chmod +x /etc/init.d/keepalived
+# vi /etc/init.d/keepalived
 ```
 
 keepalived脚本：
@@ -285,6 +300,7 @@ exit $?
 vim /etc/keepalived/keepalived.conf
 
 ```
+
 server1内容：  
 ```#!/usr/bin/env bash
 
