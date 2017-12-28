@@ -49,8 +49,11 @@ alter user 'root'@'localhost' identified by 'newpswd'
 # chkconfig --level 345 mysql on
 
 10、设置允许其他机器访问mysql
- GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '123456'  WITH GRANT OPTION;
+```sql
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '123456'  WITH GRANT OPTION;
+-- GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'password';
 flush privileges;
+```
 
 NOTE:
 1、错误：
