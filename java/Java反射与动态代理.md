@@ -176,7 +176,7 @@ JDK动态代理中重要的一个接口 InvocationHandler 和一个类 Proxy。
 ```java
      public interface InvocationHandler {
                                被代理的对象    被代理的方法实例 方法参数
-          public static invoke(Object proxy, Method method, Object[] args) throws Throwable;
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable;
      }
 ```     
 2. Proxy类
