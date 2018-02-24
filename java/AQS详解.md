@@ -322,6 +322,7 @@ protected boolean tryRelease(int arg) {
 
 这个函数要做的就是 **唤醒最前面的那个未放弃（CANCEL）的节点**。假设该节点为s，则s被唤醒，s进入`acquireQueued`中`final Node p = node.predecessor(); p == head && tryAcquire(arg)`的判断，如果此时，s的前驱节点为head节点，则尝试获取资源。如果`p != head`则进入`shouldParkAfterFailedAcquire`的调整，s也必然会跑到`head`节点的next节点，然后自旋成功，通过`tryAcquire`成功获取到资源，并且通过`setHead()`将自己设置成head节点。`acquire`函数返回，获取资源(锁)成功，进行接下来的操作。
 
+### unparkSuccessor的疑问
 这里对于`unparkSuccessor`为何从后向前遍历有个疑问。 [Java AQS unparkSuccessor 方法中for循环从tail开始而不是head的疑问？](https://www.zhihu.com/question/50724462)
 
 看`addWaiter(Node)`入队操作：  
@@ -347,11 +348,187 @@ protected boolean tryRelease(int arg) {
         }
     }
 ```
-有代码可以看出，先新节点node.prev指向尾节点t，而通过CAS操作`compareAndSetTail(t, node)`保证了前一步的线程安全，因为CAS失败则进入下一轮循环，CAS成功后再由t.next指向新的节点。所以如果从前向后遍历的话，可能是找不到这个新节点的（t.next = node未执行）。
+由代码可以看出，先将新节点node.prev指向尾节点t，而通过CAS操作`compareAndSetTail(t, node)`保证了前一步的线程安全，因为CAS失败则进入下一轮循环，CAS成功后再由t.next指向新的节点。所以如果从前向后遍历的话，可能是找不到这个新节点的（t.next = node未执行）。
 
 ## acquireShared(int arg)
+该方法是共享模式下获取共享资源的顶层模板方法。
+
+```java
+ /**
+* Acquires in shared mode, ignoring interrupts.  Implemented by
+* first invoking at least once {@link #tryAcquireShared},
+* returning on success.  Otherwise the thread is queued, possibly
+* repeatedly blocking and unblocking, invoking {@link
+* #tryAcquireShared} until success.
+*
+* @param arg the acquire argument.  This value is conveyed to
+*        {@link #tryAcquireShared} but is otherwise uninterpreted
+*        and can represent anything you like.
+*/
+public final void acquireShared(int arg) {
+    if (tryAcquireShared(arg) < 0) 
+        doAcquireShared(arg); 
+}
+```
+
+这里`tryAcquireShared`也需要由自定义同步器去实现。但是AQS已经把`tryAcquireShared`的返回值语义定义好了：
+* 0：获取成功，但没有剩余资源
+* 正数：获取成功，还有剩余资源，其他线程还可以继续获取
+* 负数：获取失败
+
+SO，这里`acquireShared`的获取流程是：
+1. `tryAcquireShared`获取资源，成功则直接返回
+2. 失败则通过`doAcquireShared`进入等待队列，直至获取资源成功返回。
+
+### tryAcquireShared(int)
+与`tryAcquire`一样，`tryAcquireShared`也被设计成由子类实现的方法。
+```java
+protected int tryAcquireShared(int arg) {
+    throw new UnsupportedOperationException();
+}
+```
+
+### doAcquireShared(int)
+```java
+/**
+* Acquires in shared uninterruptible mode.
+* @param arg the acquire argument
+*/
+private void doAcquireShared(int arg) {
+    final Node node = addWaiter(Node.SHARED); // 加入队列尾部
+    boolean failed = true; // 失败标志
+    try {
+        boolean interrupted = false; // 是否被中断过标志
+        for (;;) {
+            final Node p = node.predecessor(); // 当前节点的前驱节点（此时可能是被前驱节点unpark）
+            if (p == head) { // 如果前驱节点是head节点（head节点释放资源后通知自己）
+                int r = tryAcquireShared(arg); // 尝试获取资源
+                if (r >= 0) { // 获取资源成功
+                    setHeadAndPropagate(node, r); // 当前节点置为头节点，并根据是否有剩余资源决定唤醒后面的线程
+                    p.next = null; // help GC
+                    if (interrupted) // 如果被中断过，补上中断
+                        selfInterrupt();
+                    failed = false; 
+                    return;
+                }
+            }
+
+            // 1. shouldParkAfterFailedAcquire 判断是否需要休息
+            // 2. parkAndCheckInterrupt park当前线程，并检查是否有中断
+            if (shouldParkAfterFailedAcquire(p, node) &&
+                parkAndCheckInterrupt())
+                interrupted = true;
+        }
+    } finally {
+        if (failed)
+            cancelAcquire(node);
+    }
+}
+```
+
+>有木有觉得跟acquireQueued()很相似？对，其实流程并没有太大区别。只不过这里将补中断的selfInterrupt()放到doAcquireShared()里了，而独占模式是放到acquireQueued()之外，其实都一样，不知道Doug Lea是怎么想的。
+
+>跟独占模式比，还有一点需要注意的是，这里只有线程是head.next时（“老二”），才会去尝试获取资源，有剩余的话还会唤醒之后的队友。那么问题就来了，假如老大用完后释放了5个资源，而老二需要6个，老三需要1个，老四需要2个。老大先唤醒老二，老二一看资源不够，他是把资源让给老三呢，还是不让？答案是否定的！老二会继续park()等待其他线程释放资源，也更不会去唤醒老三和老四了。独占模式，同一时刻只有一个线程去执行，这样做未尝不可；但共享模式下，多个线程是可以同时执行的，现在因为老二的资源需求量大，而把后面量小的老三和老四也都卡住了。当然，这并不是问题，只是AQS保证严格按照入队顺序唤醒罢了（保证公平，但降低了并发）。
+
+### setHeadAndPropagate(Node, int)
+```java
+/**
+* Sets head of queue, and checks if successor may be waiting
+* in shared mode, if so propagating if either propagate > 0 or
+* PROPAGATE status was set.
+*
+* @param node the node
+* @param propagate the return value from a tryAcquireShared
+*/
+private void setHeadAndPropagate(Node node, int propagate) {
+    Node h = head; // Record old head for check below
+    setHead(node);
+    /*
+        * Try to signal next queued node if:
+        *   Propagation was indicated by caller,
+        *     or was recorded (as h.waitStatus either before
+        *     or after setHead) by a previous operation
+        *     (note: this uses sign-check of waitStatus because
+        *      PROPAGATE status may transition to SIGNAL.)
+        * and
+        *   The next node is waiting in shared mode,
+        *     or we don't know, because it appears null
+        *
+        * The conservatism in both of these checks may cause
+        * unnecessary wake-ups, but only when there are multiple
+        * racing acquires/releases, so most need signals now or soon
+        * anyway.
+        */
+    
+    // 如果还有剩余量，则唤醒后继线程
+    if (propagate > 0 || h == null || h.waitStatus < 0 ||
+        (h = head) == null || h.waitStatus < 0) {
+        Node s = node.next;
+        if (s == null || s.isShared())
+            doReleaseShared();
+    }
+}
+```
 
 ## releaseShared(int arg)
+```java
+/**
+* Releases in shared mode.  Implemented by unblocking one or more
+* threads if {@link #tryReleaseShared} returns true.
+*
+* @param arg the release argument.  This value is conveyed to
+*        {@link #tryReleaseShared} but is otherwise uninterpreted
+*        and can represent anything you like.
+* @return the value returned from {@link #tryReleaseShared}
+*/
+public final boolean releaseShared(int arg) {
+    if (tryReleaseShared(arg)) { // 尝试释放资源
+        doReleaseShared(); // 唤醒后继节点
+        return true;
+    }
+    return false;
+}
+```
+
+>此方法的流程也比较简单，一句话：释放掉资源后，唤醒后继。跟独占模式下的release()相似，但有一点稍微需要注意：独占模式下的tryRelease()在完全释放掉资源（state=0）后，才会返回true去唤醒其他线程，这主要是基于独占下可重入的考量；而共享模式下的releaseShared()则没有这种要求，共享模式实质就是控制一定量的线程并发执行，那么拥有资源的线程在释放掉部分资源时就可以唤醒后继等待结点。例如，资源总量是13，A（5）和B（7）分别获取到资源并发运行，C（4）来时只剩1个资源就需要等待。A在运行过程中释放掉2个资源量，然后tryReleaseShared(2)返回true唤醒C，C一看只有3个仍不够继续等待；随后B又释放2个，tryReleaseShared(2)返回true唤醒C，C一看有5个够自己用了，然后C就可以跟A和B一起运行。而ReentrantReadWriteLock读锁的tryReleaseShared()只有在完全释放掉资源（state=0）才返回true，所以自定义同步器可以根据需要决定tryReleaseShared()的返回值。
+
+### doReleaseShared
+```java
+/**
+* Release action for shared mode -- signals successor and ensures
+* propagation. (Note: For exclusive mode, release just amounts
+* to calling unparkSuccessor of head if it needs signal.)
+*/
+private void doReleaseShared() {
+    /*
+        * Ensure that a release propagates, even if there are other
+        * in-progress acquires/releases.  This proceeds in the usual
+        * way of trying to unparkSuccessor of head if it needs
+        * signal. But if it does not, status is set to PROPAGATE to
+        * ensure that upon release, propagation continues.
+        * Additionally, we must loop in case a new node is added
+        * while we are doing this. Also, unlike other uses of
+        * unparkSuccessor, we need to know if CAS to reset status
+        * fails, if so rechecking.
+        */
+    for (;;) {
+        Node h = head;
+        if (h != null && h != tail) {
+            int ws = h.waitStatus;
+            if (ws == Node.SIGNAL) {
+                if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))
+                    continue;            // loop to recheck cases
+                unparkSuccessor(h); // 唤醒后继
+            }
+            else if (ws == 0 &&
+                        !compareAndSetWaitStatus(h, 0, Node.PROPAGATE))
+                continue;                // loop on failed CAS
+        }
+        if (h == head)                   // loop if head changed
+            break;
+    }
+}
+```
 
 # 参考
 http://www.cnblogs.com/waterystone/p/4920797.html
