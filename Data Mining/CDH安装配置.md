@@ -317,3 +317,20 @@ sudo -u hdfs hdfs dfs -chown mapred:mapred /tmp
 ```
 
 http://www.cnblogs.com/split/articles/4583412.html
+
+## Hive报错
+```
+Caused by: org.datanucleus.exceptions.NucleusException: Attempt to invoke the "BONECP" plugin to create a ConnectionPool gave an error : The specified datastore driver ("com.mysql.jdbc.Driver") was not found in the CLASSPATH. Please check your CLASSPATH specification, and the name of the driver.
+	...
+Caused by: org.datanucleus.store.rdbms.connectionpool.DatastoreDriverNotFoundException: The specified datastore driver ("com.mysql.jdbc.Driver") was not found in the CLASSPATH. Please check your CLASSPATH specification, and the name of the driver.
+	...
+```
+
+这里安装Hive的时候可能会报错，因为我们使用了MySql作为hive的元数据存储，hive默认没有带mysql的驱动，通过以下命令拷贝一个就行了：
+```bash
+mv /opt/CDH/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46-bin.jar  /opt/cloudera/parcels/CDH-5.14.2-1.cdh5.14.2.p0.3/lib/hive/lib/
+```
+
+
+## Hive 启动报错
+https://stackoverflow.com/questions/42209875/hive-2-1-1-metaexceptionmessageversion-information-not-found-in-metastore
