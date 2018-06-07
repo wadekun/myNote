@@ -538,5 +538,8 @@ private void doReleaseShared() {
 * tryAcquireShared(int)：共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。
 * tryReleaseShared(int)：共享方式。尝试释放资源，如果释放后允许唤醒后续等待结点返回true，否则返回false。
 
+## ReentrantLock
+ReetrantLock：可重入锁。
+
 # 参考
 http://www.cnblogs.com/waterystone/p/4920797.html
