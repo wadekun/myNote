@@ -215,7 +215,7 @@ scp -r /opt/cm-5.14.3/ cdh3:/opt/
 
 >echo USER=\"cloudera-scm\" >> /etc/default/cloudera-scm-agent
 
->echo "Detaults secure_path = /sbin:/bin:/user/sbin:/user/bin:" >> /etc/sudoers
+>echo "Detaults secure_path = /sbin:/bin:/user/sbin:/user/bin" >> /etc/sudoers
 ```
 
 # 准备Parcels
