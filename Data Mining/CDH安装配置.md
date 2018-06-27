@@ -380,7 +380,7 @@ django.core.exceptions.ImproperlyConfigured: Error loading MySQLdb module: libmy
 安装节点缺少`libmysqlclient_r.so.16`文件。从别的服务器上拷贝至`/usr/lib64/`下，执行`ldconfig`即可。
 
 ## 初始化oozie库表 java.lang.classnotfoundexception com.mysql.jdbc.driver
-原来以为像`hive`一样放到``
+原来以为像`hive`一样放到`/opt/cloudera/parcels/CDH-5.14.2-1.cdh5.14.2.p0.3/lib/oozie/lib/`下，结果测试还是报错，原来是需要放到`/usr/share/java`下，并且改名`mysql-connector-java.jar`。即`/usr/share/java/mysql-connector-java.jar`。
 
 
 ## Hue load balancer启动失败，并且日志文件不存在
