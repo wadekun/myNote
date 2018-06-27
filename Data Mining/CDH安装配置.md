@@ -183,7 +183,7 @@ mysql>quit; #退出
 
 >echo USER=\"cloudera-scm\" >> /etc/default/cloudera-scm-agent
 
->echo "Detaults secure_path = /sbin:/bin:/user/sbin:/user/bin" >> /etc/sudoers
+#>echo "Detaults secure_path = /sbin:/bin:/user/sbin:/user/bin" >> /etc/sudoers
 ```
 
 ## 建立 Cloudera Manager 元数据库
@@ -194,6 +194,22 @@ mysql>quit; #退出
 # 创建cm数据库
 /opt/cm-5.14.3/share/cmf/schema/scm_prepare_database.sh mysql cm -hlocalhost -uroot -p**** --scm-host localhost scm scm scm
 ```
+
+`Access denied for user 'root'@'%' to database 'cm'` :    
+```sql
+mysql> SELECT `User`, `Grant_priv` FROM `mysql`.`user` WHERE `User` = 'root';
+-- You will probably notice it returns a 'N' for Grant_priv. So do this:
+
+mysql> UPDATE `mysql`.`user` SET `Grant_priv` = 'Y' WHERE `User` = 'root';
+mysql> FLUSH PRIVILEGES;
+mysql> SELECT `User`, `Grant_priv` FROM `mysql`.`user`;
+```
+
+如遇到` Access denied for user 'scm'@'59net' (using password: YES)` 错误，需要向 `scm`用户授权。cm在用mysql`root`用户登录后会创建`scm`用户，来访问创建的`cm`库。
+```sql
+grant all privileges on cm.* to 'scm'@'%' identified by 'scm';
+```
+
 
 密码问题：   https://www.jianshu.com/p/5779aa264840
 
@@ -215,7 +231,7 @@ scp -r /opt/cm-5.14.3/ cdh3:/opt/
 
 >echo USER=\"cloudera-scm\" >> /etc/default/cloudera-scm-agent
 
->echo "Detaults secure_path = /sbin:/bin:/user/sbin:/user/bin" >> /etc/sudoers
+#>echo "Detaults secure_path = /sbin:/bin:/user/sbin:/user/bin" >> /etc/sudoers
 ```
 
 # 准备Parcels
@@ -268,6 +284,27 @@ chown -R cloudera-scm:cloudera-scm /opt/cloudera/parcels
 # 为即将安装的服务建立元数据库
 ```bash
 mysql -u root -p -e "create database hive DEFAULT CHARACTER SET utf8; create database rman DEFAULT CHARACTER SET utf8; create database oozie DEFAULT CHARACTER SET utf8; create database hue DEFAULT CHARACTER SET utf8;grant all on *.* TO 'root'@'%' IDENTIFIED BY 'Q1@r';"
+```
+
+# 开机自启
+
+```bash
+# server
+cp /opt/cm-5.14.3/etc/init.d/cloudera-scm-server /etc/init.d/
+chkconfig --add cloudera-scm-server
+chkconfig cloudera-scm-server on
+
+## 修改 server配置
+vim /etc/init.d/cloudera-scm-server
+#### 添加 JAVA_HOME配置
+export JAVA_HOME=/usr/java/jdk1.8.0_172
+#### 修改CM安装目录
+将 CMF_DEFAULTS=${CMF_DEFAULTS:-/etc/default} 修改为：CMF_DEFAULTS=${CMF_DEFAULTS:-/opt/cm-5.14.3/etc/default}
+
+# agent
+cp /opt/cm-5.14.3/etc/init.d/cloudera-scm-agent /etc/init.d/
+chkconfig --add cloudera-scm-agent
+chkconfig cloudera-scm-agent on
 ```
 
 # ISSUES
@@ -328,9 +365,42 @@ Caused by: org.datanucleus.store.rdbms.connectionpool.DatastoreDriverNotFoundExc
 
 这里安装Hive的时候可能会报错，因为我们使用了MySql作为hive的元数据存储，hive默认没有带mysql的驱动，通过以下命令拷贝一个就行了：
 ```bash
-mv /opt/CDH/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46-bin.jar  /opt/cloudera/parcels/CDH-5.14.2-1.cdh5.14.2.p0.3/lib/hive/lib/
+cp /opt/CDH/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46-bin.jar  /opt/cloudera/parcels/CDH-5.14.2-1.cdh5.14.2.p0.3/lib/hive/lib/
 ```
 
 
 ## Hive 启动报错
 https://stackoverflow.com/questions/42209875/hive-2-1-1-metaexceptionmessageversion-information-not-found-in-metastore
+
+## Hue 测试连接数据库报错
+```
+django.core.exceptions.ImproperlyConfigured: Error loading MySQLdb module: libmysqlclient_r.so.16: cannot open shared object file: No such file or directory
+```
+
+安装节点缺少`libmysqlclient_r.so.16`文件。从别的服务器上拷贝至`/usr/lib64/`下，执行`ldconfig`即可。
+
+## 初始化oozie库表 java.lang.classnotfoundexception com.mysql.jdbc.driver
+原来以为像`hive`一样放到``
+
+
+## Hue load balancer启动失败，并且日志文件不存在
+需要提前安装环境
+httpd
+mod_ssl
+利用yum install 安装上面的包 即可启动
+
+https://ask.csdn.net/questions/671624
+
+## spark-shell 权限问题
+启动`spark-shell`报错：   
+```
+org.apache.hadoop.security.AccessControlException: Permission denied: user=root, access=WRITE, inode="/user":hdfs:supergroup:drwxr-xr-x
+	...
+```
+
+https://github.com/sequenceiq/docker-spark/issues/30    
+
+在spark节点上执行：    
+```
+export HADOOP_USER_NAME=hdfs
+```
