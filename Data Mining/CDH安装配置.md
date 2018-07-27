@@ -119,10 +119,10 @@ yum instal ntp
 # 配置主节点（这里选cdh1）ntp配置文件
 vim /etc/ntp.conf
 # 添加对时服务器，保存退出
-server 202.112.29.82 prefer
+server cn.pool.ntp.org prefer
 
 # 先在主节点上同步一次时间
-ntpdate 202.112.29.82
+ntpdate cn.pool.ntp.org
 
 # 启动主节点ntp服务
 systemctl enable ntpd.service  # enable，开机自启
@@ -158,7 +158,7 @@ vim /etc/my.cnf
 skip-grant-tables     #添加这句话，这时候登入mysql就不需要密码
 symbolic-links=0
 
-# systemctl start mysqld
+systemctl start mysqld  # 启动mysql
 
 # 直接 mysql -uroot -p 登录mysql
 # 修改root密码
@@ -382,6 +382,11 @@ django.core.exceptions.ImproperlyConfigured: Error loading MySQLdb module: libmy
 ## 初始化oozie库表 java.lang.classnotfoundexception com.mysql.jdbc.driver
 原来以为像`hive`一样放到`/opt/cloudera/parcels/CDH-5.14.2-1.cdh5.14.2.p0.3/lib/oozie/lib/`下，结果测试还是报错，原来是需要放到`/usr/share/java`下，并且改名`mysql-connector-java.jar`。即`/usr/share/java/mysql-connector-java.jar`。
 
+```bash
+cp /opt/CDH/mysql-connector-java-5.1.46-bin.jar /usr/share/mysql/mysql-connector-java.jar
+cp /usr/share/mysql/mysql-connector-java.jar /var/lib/oozie/
+```
+
 
 ## Hue load balancer启动失败，并且日志文件不存在
 需要提前安装环境
@@ -404,3 +409,14 @@ https://github.com/sequenceiq/docker-spark/issues/30
 ```
 export HADOOP_USER_NAME=hdfs
 ```
+
+## 关于ip与hostname显示问题
+http://www.cnblogs.com/kerrycode/p/3595724.html
+
+## 集群检查
+
+### 群集进程了多个时区。例如，cdh4 上的 UTC+08:00 和 cdh1 上的 UTC-05:00。
+
+### Cloudera 建议将 /proc/sys/vm/swappiness 设置为最大值 10。当前设置为 60。使用 sysctl 命令在运行时更改该设置并编辑 /etc/sysctl.conf，以在重启后保存该设置。您可以继续进行安装，但 Cloudera Manager 可能会报告您的主机由于交换而运行状况不良。
+
+### 已启用透明大页面压缩，可能会导致重大性能问题。请运行“echo never > /sys/kernel/mm/transparent_hugepage/defrag”和“echo never > /sys/kernel/mm/transparent_hugepage/enabled”以禁用此设置，然后将同一命令添加到 /etc/rc.local 等初始化脚本中，以便在系统重启时予以设置。

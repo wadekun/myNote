@@ -1,0 +1,1 @@
+所有的socket通道类（DatagramChannel、SocketChannel、ServerSocketChannel）都继承了位于`java.nio.channel.spi`包下的`AbstractSelectableChannel`，这意味着可以用一个`Selector`对象来执行`socket`通道的就绪选择（readiness selection）。
