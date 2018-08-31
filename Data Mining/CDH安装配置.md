@@ -420,3 +420,37 @@ http://www.cnblogs.com/kerrycode/p/3595724.html
 ### Cloudera 建议将 /proc/sys/vm/swappiness 设置为最大值 10。当前设置为 60。使用 sysctl 命令在运行时更改该设置并编辑 /etc/sysctl.conf，以在重启后保存该设置。您可以继续进行安装，但 Cloudera Manager 可能会报告您的主机由于交换而运行状况不良。
 
 ### 已启用透明大页面压缩，可能会导致重大性能问题。请运行“echo never > /sys/kernel/mm/transparent_hugepage/defrag”和“echo never > /sys/kernel/mm/transparent_hugepage/enabled”以禁用此设置，然后将同一命令添加到 /etc/rc.local 等初始化脚本中，以便在系统重启时予以设置。
+
+### oozie webconsole extjs2.2
+http://archive.cloudera.com/gplextras/misc/ext-2.2.zip
+加压至`/var/lib/oozie/`目录下即可。
+
+
+### Centos 7 ntp时间问题
+明明配置了ntp服务，还是说时间同步有问题。。原来是Centos7内置了`chrony`服务，同是实现了`ntp`协议的时间服务。cdh manager应该是使用了`chrony`，切换为`chrony`后，不报这个问题了。
+
+### Hadoop ResourceManager启动报local-dirs are bad
+https://www.jianshu.com/p/ae67e1b69f3e     
+
+有的时候，我们通过bin/yarn nodemanager启动一个NodeManager时，我们在ResourceManager的输出中，能看到这么一个错误:local-dirs are bad...
+
+那么这个错误是由于什么导致的呢？
+
+最常见的原因，就是NodeManager所在的机器上，可用的磁盘空间超过了max-disk-utilization-per-disk-percentage这个选项设定的默认阈值90.0%
+
+所以，解决方案有两个:
+
+第一个是，清理机器上的磁盘空间
+另一个是，调大这个阈值，比如：
+```
+<property>
+<name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
+<value>98.5</value>
+</property>
+```
+还有一种方案就是禁止NodeManager进行健康检查，但是，这样有一个缺陷，就是当你的作业长时间卡顿在那儿，你不能通过查看日志来发现到底是哪里出现了问题。所以，这种方案最好不要使用。
+
+作者：AlstonWilliams
+链接：https://www.jianshu.com/p/ae67e1b69f3e
+來源：简书
+简书著作权归作者所有，任何形式的转载都请联系作者获得授权并注明出处。
