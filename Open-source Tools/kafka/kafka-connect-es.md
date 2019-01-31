@@ -11,6 +11,8 @@ kafka-connect-elasticsearch 将kafka数据写入es时，默认将日志中一个
 `"date_detection": true`：开启时间字符串检测
 `"dynamic_date_formats": ["yyyy-MM-dd HH:mm:ss.SSSSSS||yyyy-MM-dd HH:mm:ss"]`：动态时间格式，匹配这两个格式的字符串都将索引成功
 
+重新启动connect进行，就可以看到新增的数据了。
+
 ```json
 {
   "mappings": {
