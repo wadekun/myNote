@@ -141,7 +141,7 @@ logback使用application.yml中的属性使用springProperty才可使用applicat
 logging:
   level: debug
   # 指定配置文件位置
-  config: file:/uniondrug/log-service/config/logback-spring.xml
+  config: file:/app/log-service/config/logback-spring.xml
 ```
 
 * 需要提前在ES中设置index的mapping，不然ES有可能将time识别为text格式，会影响根据time进行的一些操作  
