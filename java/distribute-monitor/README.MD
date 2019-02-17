@@ -1,4 +1,4 @@
-# [sleuth-zipkin分布式追踪](# sleuth-zipkin分布式追踪
+# sleuth-zipkin分布式追踪
 
 ## 背景
 
