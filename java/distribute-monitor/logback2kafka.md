@@ -32,7 +32,8 @@
 * logback-spring.xml
 
 **建议使用logback-spring.xml替代logback.xml**
-logback.xml后于`application.yml`解析，无法读取`application.yml`中配置的变量信息。
+logback.xml早于`application.yml`解析，无法读取`application.yml`中配置的变量信息。  
+logback使用application.yml中的属性使用springProperty才可使用application.yml中的值。可以设置默认值
 
 ```xml
 <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
